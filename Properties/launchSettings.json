@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "netproxy": {
+      "commandName": "Project",
+      "commandLineArgs": "191.235.177.30 80 8082"
+    }
+  }
+}

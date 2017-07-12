@@ -1,0 +1,26 @@
+﻿{
+  "testUdp": {
+    "localport": 7777,
+    "protocol": "udp",
+    "forwardIp": "35.187.92.120",
+    "forwardPort": 7777
+  },
+  "http": {
+    "localport": 80,
+    "protocol": "tcp",
+    "forwardIp": "35.187.92.120",
+    "forwardPort": 80
+  },
+  "raknet1": {
+    "localport": 30000,
+    "protocol": "udp",
+    "forwardIp": "35.187.92.120",
+    "forwardPort": 30000
+  },
+  "raknet2": {
+    "localport": 30001,
+    "protocol": "udp",
+    "forwardIp": "35.187.92.120",
+    "forwardPort": 30001
+  }
+}
