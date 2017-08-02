@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace NetProxy
 {
-    class UdpProxy: IProxy
+    class UdpProxy : IProxy
     {
         public async Task Start(string remoteServerIp, ushort remoteServerPort, ushort localPort, string localIp = null)
         {
@@ -45,14 +45,13 @@ namespace NetProxy
                 {
                     var message = await server.ReceiveAsync();
                     var endpoint = message.RemoteEndPoint;
-                    if (!clients.ContainsKey(endpoint))
-                    {
-                        clients[endpoint] = new UdpClient(server, endpoint, new IPEndPoint(IPAddress.Parse(remoteServerIp), remoteServerPort));
-                    }
-                    var client = clients[endpoint];
+                    var client = clients.GetOrAdd(endpoint, ep => new UdpClient(server, endpoint, new IPEndPoint(IPAddress.Parse(remoteServerIp), remoteServerPort)));
                     await client.SendToServer(message.Buffer);
                 }
-                catch (Exception) { }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"an exception occurred on recieving a client datagram: {ex}");
+                }
 
             }
         }
@@ -60,7 +59,7 @@ namespace NetProxy
 
     class UdpClient
     {
-        private System.Net.Sockets.UdpClient _server;
+        private readonly System.Net.Sockets.UdpClient _server;
         public UdpClient(System.Net.Sockets.UdpClient server, IPEndPoint clientEndpoint, IPEndPoint remoteServer)
         {
             _server = server;
@@ -73,16 +72,22 @@ namespace NetProxy
         }
 
 
-        public System.Net.Sockets.UdpClient client = new System.Net.Sockets.UdpClient();
+        public readonly System.Net.Sockets.UdpClient client = new System.Net.Sockets.UdpClient();
         public DateTime lastActivity = DateTime.UtcNow;
-        private IPEndPoint _clientEndpoint;
-        private IPEndPoint _remoteServer;
+        private readonly IPEndPoint _clientEndpoint;
+        private readonly IPEndPoint _remoteServer;
         private bool _isRunning;
+        private readonly TaskCompletionSource<bool> _tcs = new TaskCompletionSource<bool>();
+
+
 
         public async Task SendToServer(byte[] message)
         {
             lastActivity = DateTime.UtcNow;
-            await client.SendAsync(message, message.Length, _remoteServer);
+
+            await _tcs.Task;
+            var sent = await client.SendAsync(message, message.Length, _remoteServer);
+            Console.WriteLine($"{sent} bytes sent from a client message of {message.Length} bytes from {_clientEndpoint} to {_remoteServer}");
         }
 
         private void Run()
@@ -91,14 +96,23 @@ namespace NetProxy
             Task.Run(async () =>
             {
                 client.Client.Bind(new IPEndPoint(IPAddress.Any, 0));
+                _tcs.SetResult(true);
                 using (client)
                 {
                     while (_isRunning)
                     {
-                        var result = await client.ReceiveAsync();
-                        lastActivity = DateTime.UtcNow;
-                        await _server.SendAsync(result.Buffer, result.Buffer.Length, _clientEndpoint);
+                        try
+                        {
+                            var result = await client.ReceiveAsync();
+                            lastActivity = DateTime.UtcNow;
+                            var sent = await _server.SendAsync(result.Buffer, result.Buffer.Length, _clientEndpoint);
+                            Console.WriteLine($"{sent} bytes sent from a return message of {result.Buffer.Length} bytes from {_remoteServer} to {_clientEndpoint}");
 
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"An exception occurred while recieving a server datagram : {ex}");
+                        }
                     }
                 }
 
