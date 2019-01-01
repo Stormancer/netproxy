@@ -28,13 +28,17 @@ namespace NetProxy
                 {
                     var remoteClient = await server.AcceptTcpClientAsync();
                     remoteClient.NoDelay = true;
+                    var ips = await Dns.GetHostAddressesAsync(remoteServerIp);
 
-                   
-                    new TcpClient(remoteClient, new IPEndPoint(IPAddress.Parse(remoteServerIp), remoteServerPort));
+                    new TcpClient(remoteClient, new IPEndPoint(ips.First(), remoteServerPort));
 
 
                 }
-                catch (Exception) { }
+                catch (Exception ex) {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    Console.WriteLine(ex);
+                    Console.ResetColor();
+                }
 
             }
         }
