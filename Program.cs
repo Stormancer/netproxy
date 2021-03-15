@@ -5,9 +5,9 @@ using System.Linq;
 
 namespace NetProxy
 {
-    class Program
+    internal static class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             try
             {
@@ -22,12 +22,13 @@ namespace NetProxy
                         try
                         {
                             var proxy = new UdpProxy();
-                            return proxy.Start(c.Value.forwardIp, c.Value.forwardPort, c.Value.localPort, c.Value.localIp);
+                            return proxy.Start(c.Value.forwardIp, c.Value.forwardPort, c.Value.localPort,
+                                c.Value.localIp);
                         }
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Failed to start {c.Key} : {ex.Message}");
-                            throw ex;
+                            throw;
                         }
                     }
                     else if (c.Value.protocol == "tcp")
@@ -35,27 +36,25 @@ namespace NetProxy
                         try
                         {
                             var proxy = new TcpProxy();
-                            return proxy.Start(c.Value.forwardIp, c.Value.forwardPort, c.Value.localPort, c.Value.localIp);
+                            return proxy.Start(c.Value.forwardIp, c.Value.forwardPort, c.Value.localPort,
+                                c.Value.localIp);
                         }
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Failed to start {c.Key} : {ex.Message}");
-                            throw ex;
+                            throw;
                         }
                     }
                     else
                     {
-                        return Task.FromException(new InvalidOperationException($"procotol not supported {c.Value.protocol}"));
+                        return Task.FromException(
+                            new InvalidOperationException($"protocol not supported {c.Value.protocol}"));
                     }
                 })).Wait();
-
-
-
-
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"An error occured : {ex}");
+                Console.WriteLine($"An error occurred : {ex}");
             }
         }
     }
@@ -68,7 +67,8 @@ namespace NetProxy
         public string forwardIp { get; set; }
         public ushort forwardPort { get; set; }
     }
-    interface IProxy
+
+    internal interface IProxy
     {
         Task Start(string remoteServerIp, ushort remoteServerPort, ushort localPort, string localIp = null);
     }
