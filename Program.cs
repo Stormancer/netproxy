@@ -13,77 +13,93 @@ namespace NetProxy
             try
             {
                 var configJson = System.IO.File.ReadAllText("config.json");
-                var configs = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, ProxyConfig>>(configJson);
+                Dictionary<string, ProxyConfig>? configs = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, ProxyConfig>>(configJson);
                 if (configs == null)
                 {
                     throw new Exception("configs is null");
                 }
 
-                Task.WhenAll(configs.Select(c =>
-                {
-                    var proxyName = c.Key;
-                    var proxyConfig = c.Value;
-                    var forwardPort = proxyConfig.forwardPort;
-                    var localPort = proxyConfig.localPort;
-                    var forwardIp = proxyConfig.forwardIp;
-                    var localIp = proxyConfig.localIp;
-                    try
-                    {
-                        if (forwardIp == null)
-                        {
-                            throw new Exception("forwardIp is null");
-                        }
-                        if (!forwardPort.HasValue)
-                        {
-                            throw new Exception("forwardPort is null");
-                        }
-                        if (!localPort.HasValue)
-                        {
-                            throw new Exception("localPort is null");
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
-                        throw;
-                    }
-
-                    if (proxyConfig.protocol == "udp")
-                    {
-                        try
-                        {
-                            var proxy = new UdpProxy();
-                            return proxy.Start(forwardIp, forwardPort.Value, localPort.Value, localIp);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
-                            throw;
-                        }
-                    }
-                    else if (proxyConfig.protocol == "tcp")
-                    {
-                        try
-                        {
-                            var proxy = new TcpProxy();
-                            return proxy.Start(forwardIp, forwardPort.Value, localPort.Value, localIp);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
-                            throw;
-                        }
-                    }
-                    else
-                    {
-                        return Task.FromException(
-                            new InvalidOperationException($"protocol not supported {proxyConfig.protocol}"));
-                    }
-                })).Wait();
+                var tasks = configs.SelectMany(c => ProxyFromConfig(c.Key, c.Value));
+                Task.WhenAll(tasks).Wait();
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"An error occurred : {ex}");
+            }
+        }
+
+        private static IEnumerable<Task> ProxyFromConfig(string proxyName, ProxyConfig proxyConfig)
+        {
+            var forwardPort = proxyConfig.forwardPort;
+            var localPort = proxyConfig.localPort;
+            var forwardIp = proxyConfig.forwardIp;
+            var localIp = proxyConfig.localIp;
+            var protocol = proxyConfig.protocol;
+            try
+            {
+                if (forwardIp == null)
+                {
+                    throw new Exception("forwardIp is null");
+                }
+                if (!forwardPort.HasValue)
+                {
+                    throw new Exception("forwardPort is null");
+                }
+                if (!localPort.HasValue)
+                {
+                    throw new Exception("localPort is null");
+                }
+                if (protocol != "udp" && protocol != "tcp" && protocol != "any")
+                {
+                    throw new Exception($"protocol is not supported {protocol}");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
+                throw;
+            }
+
+            bool protocolHandled = false;
+            if (protocol == "udp" || protocol == "any")
+            {
+                protocolHandled = true;
+                Task task;
+                try
+                {
+                    var proxy = new UdpProxy();
+                    task = proxy.Start(forwardIp, forwardPort.Value, localPort.Value, localIp);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
+                    throw;
+                }
+
+                yield return task;
+            }
+
+            if (protocol == "tcp" || protocol == "any")
+            {
+                protocolHandled = true;
+                Task task;
+                try
+                {
+                    var proxy = new TcpProxy();
+                    task = proxy.Start(forwardIp, forwardPort.Value, localPort.Value, localIp);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to start {proxyName} : {ex.Message}");
+                    throw;
+                }
+
+                yield return task;
+            }
+
+            if (!protocolHandled)
+            {
+                throw new InvalidOperationException($"protocol not supported {protocol}");
             }
         }
     }

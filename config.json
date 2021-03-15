@@ -11,6 +11,12 @@
     "forwardIp": "35.187.92.120",
     "forwardPort": 80
   },
+  "https": {
+    "localPort": 8443,
+    "protocol": "any",
+    "forwardIp": "35.187.92.120",
+    "forwardPort": 443
+  },
   "raknet1": {
     "localPort": 30000,
     "protocol": "udp",
