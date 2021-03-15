@@ -13,8 +13,7 @@ namespace NetProxy
             {
                 var configJson = System.IO.File.ReadAllText("config.json");
 
-                var configs = Newtonsoft.Json.JsonConvert.DeserializeObject<Dictionary<string, ProxyConfig>>(configJson);
-
+                var configs = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, ProxyConfig>>(configJson);
 
                 Task.WhenAll(configs.Select(c =>
                 {
