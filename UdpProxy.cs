@@ -15,17 +15,20 @@ namespace NetProxy
         /// </summary>
         public int ConnectionTimeout { get; set; } = (4 * 60 * 1000);
 
-        public async Task Start(string remoteServerIp, ushort remoteServerPort, ushort localPort, string? localIp = null)
+        public async Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp = null)
         {
             var connections = new ConcurrentDictionary<IPEndPoint, UdpConnection>();
-            var remoteServerEndPoint = new IPEndPoint(IPAddress.Parse(remoteServerIp), remoteServerPort);
+
+            // TCP will lookup every time while this is only once.
+            var ips = await Dns.GetHostAddressesAsync(remoteServerHostNameOrAddress).ConfigureAwait(false);
+            var remoteServerEndPoint = new IPEndPoint(ips[0], remoteServerPort);
 
             var localServer = new UdpClient(AddressFamily.InterNetworkV6);
             localServer.Client.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
             IPAddress localIpAddress = string.IsNullOrEmpty(localIp) ? IPAddress.IPv6Any : IPAddress.Parse(localIp);
             localServer.Client.Bind(new IPEndPoint(localIpAddress, localPort));
 
-            Console.WriteLine($"UDP proxy started [{localIpAddress}]:{localPort} -> [{remoteServerIp}]:{remoteServerPort}");
+            Console.WriteLine($"UDP proxy started [{localIpAddress}]:{localPort} -> [{remoteServerHostNameOrAddress}]:{remoteServerPort}");
 
             var _ = Task.Run(async () =>
             {

@@ -4,7 +4,6 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading;
@@ -19,7 +18,7 @@ namespace NetProxy
         /// </summary>
         public int ConnectionTimeout { get; set; } = (4 * 60 * 1000);
 
-        public async Task Start(string remoteServerIp, ushort remoteServerPort, ushort localPort, string? localIp)
+        public async Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp)
         {
             var connections = new ConcurrentBag<TcpConnection>();
 
@@ -28,7 +27,7 @@ namespace NetProxy
             localServer.Server.SetSocketOption(SocketOptionLevel.IPv6, SocketOptionName.IPv6Only, false);
             localServer.Start();
 
-            Console.WriteLine($"TCP proxy started [{localIpAddress}]:{localPort} -> [{remoteServerIp}]:{remoteServerPort}");
+            Console.WriteLine($"TCP proxy started [{localIpAddress}]:{localPort} -> [{remoteServerHostNameOrAddress}]:{remoteServerPort}");
 
             var _ = Task.Run(async () =>
             {
@@ -60,10 +59,10 @@ namespace NetProxy
             {
                 try
                 {
-                    var ips = await Dns.GetHostAddressesAsync(remoteServerIp).ConfigureAwait(false);
+                    var ips = await Dns.GetHostAddressesAsync(remoteServerHostNameOrAddress).ConfigureAwait(false);
 
                     var tcpConnection = await TcpConnection.AcceptTcpClientAsync(localServer,
-                            new IPEndPoint(ips.First(), remoteServerPort))
+                            new IPEndPoint(ips[0], remoteServerPort))
                         .ConfigureAwait(false);
                     tcpConnection.Run();
                     connections.Add(tcpConnection);
