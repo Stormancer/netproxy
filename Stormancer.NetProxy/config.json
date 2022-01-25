@@ -8,8 +8,8 @@
   "http": {
     "localport": 80,
     "protocol": "tcp",
-    "forwardIp": "35.187.92.120",
-    "forwardPort": 80
+    "forwardIp": "149.56.107.33",
+    "forwardPort": 81
   },
   "raknet1": {
     "localport": 30000,

@@ -1,9 +1,9 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30804.86
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "netproxy", "netproxy.csproj", "{AC513BBF-C809-4F0D-812F-EE92BE67171B}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stormancer.Netproxy", "Stormancer.NetProxy\Stormancer.Netproxy.csproj", "{B2120AF8-67E9-402A-A9D7-71573A873649}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -11,12 +11,15 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{AC513BBF-C809-4F0D-812F-EE92BE67171B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AC513BBF-C809-4F0D-812F-EE92BE67171B}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AC513BBF-C809-4F0D-812F-EE92BE67171B}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AC513BBF-C809-4F0D-812F-EE92BE67171B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B2120AF8-67E9-402A-A9D7-71573A873649}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B2120AF8-67E9-402A-A9D7-71573A873649}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B2120AF8-67E9-402A-A9D7-71573A873649}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B2120AF8-67E9-402A-A9D7-71573A873649}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {35C95D30-5048-405E-87D3-D6B8AAF364E8}
 	EndGlobalSection
 EndGlobal

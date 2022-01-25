@@ -1,8 +1,8 @@
 NetProxy
 ========
 
-Netproxy is a simple ipv6/ipv4 UDP & TCP proxy based on .NET Core. It should build and run for any .NET Core 1.1 compatible platform, 
-tested on *win10-x64* and *ubuntu.16.10-x64*.
+Netproxy is a simple ipv6/ipv4 UDP & TCP proxy based on .NET 5.0.
+Tested on *win10-x64* and *ubuntu.16.20-x64*.
 
 Why? 
 ====
@@ -10,7 +10,12 @@ We needed a simple, crossplatform IPV6 compatible UDP forwarder, and couldn't fi
 Nginx was obviously a great candidate but building it on Windows with UDP forwarding enabled was quite a pain.
 
 The objective is to be able to expose as an ipv6 endpoint a server located in an ipv4 only server provider.
-(Yes, as of 07/2017, I'm looking at you Google! Ok, you support ipv4 for TCP, but what about UDP?)
+
+Limitations
+===========
+Each remote client is mapped to a port of the local server therefore:
+- The original IP of the client is hidden to the server the packets are forwarded to.
+- The number of concurrent clients is limited by the number of available ports in the server running the proxy.
 
 Disclaimer
 ==========

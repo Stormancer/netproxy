@@ -28,7 +28,7 @@ namespace NetProxy
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Failed to start {c.Key} : {ex.Message}");
-                            throw ex;
+                            throw;
                         }
                     }
                     else if (c.Value.protocol == "tcp")
@@ -41,7 +41,7 @@ namespace NetProxy
                         catch (Exception ex)
                         {
                             Console.WriteLine($"Failed to start {c.Key} : {ex.Message}");
-                            throw ex;
+                            throw;
                         }
                     }
                     else
