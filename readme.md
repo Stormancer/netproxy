@@ -24,12 +24,12 @@ Error management exist, but is minimalist. IPV6 is not supported on the forwardi
 Usage
 =====
 - Compile for your platform following instructions at https://www.microsoft.com/net/core
-- Rewrite the config.json file to fit your need
+- Rewrite the `config.json` file to fit your need
 - Run NetProxy
 
 Configuration
 =============
-Config.json contains a map of named forwarding rules, for instance :
+`config.json` contains a map of named forwarding rules, for instance :
 
     {
      "http": {
@@ -41,10 +41,10 @@ Config.json contains a map of named forwarding rules, for instance :
      },
     ...
     }
-       
+
 - *localport* : The local port the forwarder should listen to.
 - *localip* : An optional local binding IP the forwarder should listen to. If empty or missing, it will listen to ANY_ADDRESS.
-- *protocol* : The protocol to forward. `tcp` or `udp`.
+- *protocol* : The protocol to forward. `tcp`,`udp`, or `any`.
 - *forwardIp* : The ip the traffic will be forwarded to.
 - *forwardPort* : The port the traffic will be forwarded to.
-   
+
