@@ -5,10 +5,10 @@
     <PackAsTool>true</PackAsTool>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <ToolCommandName>netproxy</ToolCommandName>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
-    <Version>0.1</Version>
+    <Version>0.2</Version>
     <PackageProjectUrl>https://github.com/Stormancer/netproxy</PackageProjectUrl>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
   </PropertyGroup>
