@@ -1,32 +1,16 @@
 ﻿{
-  "testUdp": {
-    "localPort": 7777,
-    "protocol": "udp",
-    "forwardIp": "35.187.92.120",
-    "forwardPort": 7777
-  },
-  "http": {
-    "localPort": 80,
+  "clickhouse-tls": {
+    "localPort": 19000,
     "protocol": "tcp",
-    "forwardIp": "149.56.107.33",
-    "forwardPort": 81
+    "forwardIp": "127.0.0.1",
+    "forwardPort": 9440,
+    "forwardTls": true
   },
-  "https": {
-    "localPort": 8443,
-    "protocol": "any",
-    "forwardIp": "35.187.92.120",
-    "forwardPort": 443
-  },
-  "raknet1": {
-    "localPort": 30000,
-    "protocol": "udp",
-    "forwardIp": "35.187.92.120",
-    "forwardPort": 30000
-  },
-  "raknet2": {
-    "localPort": 30001,
-    "protocol": "udp",
-    "forwardIp": "35.187.92.120",
-    "forwardPort": 30001
+  "clickhouse": {
+    "localPort": 19001,
+    "protocol": "tcp",
+    "forwardIp": "127.0.0.1",
+    "forwardPort": 9000,
+    "forwardTls": false
   }
 }

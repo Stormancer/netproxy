@@ -35,6 +35,7 @@ namespace NetProxy
             var forwardIp = proxyConfig.forwardIp;
             var localIp = proxyConfig.localIp;
             var protocol = proxyConfig.protocol;
+            var forwardTls = proxyConfig.forwardTls;
             try
             {
                 if (forwardIp == null)
@@ -68,7 +69,7 @@ namespace NetProxy
                 try
                 {
                     var proxy = new UdpProxy();
-                    task = proxy.Start(forwardIp, forwardPort.Value, localPort.Value, localIp);
+                    task = proxy.Start(forwardIp, forwardPort.Value, localPort.Value, localIp, forwardTls);
                 }
                 catch (Exception ex)
                 {
@@ -86,7 +87,7 @@ namespace NetProxy
                 try
                 {
                     var proxy = new TcpProxy();
-                    task = proxy.Start(forwardIp, forwardPort.Value, localPort.Value, localIp);
+                    task = proxy.Start(forwardIp, forwardPort.Value, localPort.Value, localIp, forwardTls);
                 }
                 catch (Exception ex)
                 {
@@ -111,10 +112,12 @@ namespace NetProxy
         public string? localIp { get; set; }
         public string? forwardIp { get; set; }
         public ushort? forwardPort { get; set; }
+        
+        public bool forwardTls { get; set; }
     }
 
     internal interface IProxy
     {
-        Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp = null);
+        Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp = null, bool remoteTls = false);
     }
 }
