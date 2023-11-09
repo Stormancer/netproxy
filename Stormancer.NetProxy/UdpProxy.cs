@@ -15,9 +15,11 @@ namespace NetProxy
         /// </summary>
         public int ConnectionTimeout { get; set; } = (4 * 60 * 1000);
 
-        public async Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp = null)
+        public async Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp = null, bool remoteTls = false)
         {
             var connections = new ConcurrentDictionary<IPEndPoint, UdpConnection>();
+            if (remoteTls)
+                throw new ArgumentException("UDP connections cannot be wrapped in TLS", nameof(remoteTls));
 
             // TCP will lookup every time while this is only once.
             var ips = await Dns.GetHostAddressesAsync(remoteServerHostNameOrAddress).ConfigureAwait(false);

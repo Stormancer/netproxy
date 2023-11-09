@@ -4,8 +4,12 @@ using System.Buffers;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
+using System.Net.Security;
 using System.Net.Sockets;
+using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,7 +22,7 @@ namespace NetProxy
         /// </summary>
         public int ConnectionTimeout { get; set; } = (4 * 60 * 1000);
 
-        public async Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp)
+        public async Task Start(string remoteServerHostNameOrAddress, ushort remoteServerPort, ushort localPort, string? localIp, bool remoteTls)
         {
             var connections = new ConcurrentBag<TcpConnection>();
 
@@ -62,7 +66,7 @@ namespace NetProxy
                     var ips = await Dns.GetHostAddressesAsync(remoteServerHostNameOrAddress).ConfigureAwait(false);
 
                     var tcpConnection = await TcpConnection.AcceptTcpClientAsync(localServer,
-                            new IPEndPoint(ips[0], remoteServerPort))
+                            new IPEndPoint(ips[0], remoteServerPort), remoteTls)
                         .ConfigureAwait(false);
                     tcpConnection.Run();
                     connections.Add(tcpConnection);
@@ -88,16 +92,17 @@ namespace NetProxy
         private EndPoint? _forwardLocalEndpoint;
         private long _totalBytesForwarded;
         private long _totalBytesResponded;
+        private bool _remoteTls;
         public long LastActivity { get; private set; } = Environment.TickCount64;
 
-        public static async Task<TcpConnection> AcceptTcpClientAsync(TcpListener tcpListener, IPEndPoint remoteEndpoint)
+        public static async Task<TcpConnection> AcceptTcpClientAsync(TcpListener tcpListener, IPEndPoint remoteEndpoint, bool remoteTls)
         {
             var localServerConnection = await tcpListener.AcceptTcpClientAsync().ConfigureAwait(false);
             localServerConnection.NoDelay = true;
-            return new TcpConnection(localServerConnection, remoteEndpoint);
+            return new TcpConnection(localServerConnection, remoteEndpoint, remoteTls);
         }
 
-        private TcpConnection(TcpClient localServerConnection, IPEndPoint remoteEndpoint)
+        private TcpConnection(TcpClient localServerConnection, IPEndPoint remoteEndpoint, bool remoteTls)
         {
             _localServerConnection = localServerConnection;
             _remoteEndpoint = remoteEndpoint;
@@ -106,6 +111,7 @@ namespace NetProxy
 
             _sourceEndpoint = _localServerConnection.Client.RemoteEndPoint;
             _serverLocalEndpoint = _localServerConnection.Client.LocalEndPoint;
+            _remoteTls = remoteTls;
         }
 
         public void Run()
@@ -145,12 +151,19 @@ namespace NetProxy
                         {
                             serverStream.Close();
                             clientStream.Close();
-                        }, true))
-                        {
-                            await Task.WhenAny(
-                                CopyToAsync(clientStream, serverStream, 81920, Direction.Forward, cancellationToken),
-                                CopyToAsync(serverStream, clientStream, 81920, Direction.Responding, cancellationToken)
-                            ).ConfigureAwait(false);
+                        }, true)) {
+                            Stream wrappedServerStream;
+                            if (_remoteTls) {
+                                wrappedServerStream = new SslStream(serverStream, true, (sender, certificate, chain, errors) => true);
+                                await ((SslStream)wrappedServerStream).AuthenticateAsClientAsync("localhost", new X509Certificate2Collection(), SslProtocols.Tls12, false);
+                            } else
+                                wrappedServerStream = serverStream;
+                            try {
+                                await Task.WhenAny(CopyToAsync(clientStream, wrappedServerStream, 81920, Direction.Forward, cancellationToken), CopyToAsync(wrappedServerStream, clientStream, 81920, Direction.Responding, cancellationToken)).ConfigureAwait(false);
+                            } finally {
+                                if (wrappedServerStream != serverStream)
+                                    wrappedServerStream.Dispose();
+                            }
                         }
                     }
                 }
